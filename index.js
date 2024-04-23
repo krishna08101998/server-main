@@ -32,7 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'views')));
 
 
-const mongoURI = "mongodb+srv://vamsi:Vamsi95@cluster0.js2dojf.mongodb.net/project?retryWrites=true&w=majority&appName=Cluster0";
+const mongoURI = "mongodb+srv://pothana:Vamsi123@cluster0.js2dojf.mongodb.net/project?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(mongoURI,)
   .then(() => console.log("Connected to MongoDB"))
