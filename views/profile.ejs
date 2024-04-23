@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" type="text/css" href="/style.css"> <!-- Assuming your CSS file is in the public directory -->
+</head>
+
+<body>
+    <div class="container">
+        <h1>User Profile</h1>
+        <div class="user-info">
+        </div>
+        <button id="logout-button">Logout</button>
+    </div>
+</body>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+        // Get the token from local storage
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            // If token is not present, redirect to login page
+            window.location.href = '/login'; // Change the URL to your login page URL
+            return;
+        }
+
+        fetch('/getprofile', {
+            method: 'GET',
+            headers: {
+                'Authorization': token // Assuming token is in localStorage with key 'token'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user information');
+                }
+                return response.json(); // Parse response JSON content
+            })
+            .then(data => {
+                // Once data is retrieved, update user information in the DOM
+                const userInfoContainer = document.querySelector('.user-info');
+                const usernameParagraph = document.createElement('p');
+                usernameParagraph.textContent = `Username: ${data.username}`;
+                const emailParagraph = document.createElement('p');
+                emailParagraph.textContent = `Email: ${data.email}`;
+                userInfoContainer.appendChild(usernameParagraph);
+                userInfoContainer.appendChild(emailParagraph);
+            })
+            .catch(error => {
+                // Handle error
+                console.error('Error:', error);
+            });
+
+        // Add event listener to the logout button
+        document.getElementById('logout-button').addEventListener('click', () => {
+            // Remove token from local storage
+            localStorage.removeItem('token');
+            
+            // Fetch to logout route
+            fetch('/logout', {
+                method: 'POST'
+                // You can add headers or body if required
+            })
+            window.location.href = '/login'
+        });
+    });
+</script>
+
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        width: 80%;
+        margin: 20px auto;
+        text-align: center;
+    }
+
+    h1 {
+        color: #333;
+    }
+
+    p {
+        color: #666;
+    }
+
+    .user-info {
+        margin-top: 20px;
+    }
+
+    .user-info p {
+        font-size: 18px;
+    }
+</style>
+
+</html>

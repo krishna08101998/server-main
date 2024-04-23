@@ -1,0 +1,319 @@
+<!-- homepage.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Page</title>
+<link rel="stylesheet" type="text/css" href="/style.css"> <!-- Assuming your CSS file is in the public directory -->
+</head>
+<body>
+<div class="navbar">
+  <a href="/">Home</a>
+  <a href="/profile">Profile</a>
+</div>
+<!-- Inside your homepage.ejs or landing.ejs file -->
+
+<!-- Inside your homepage.ejs or landing.ejs file -->
+<div class="container">
+  <div class="todo-container">
+    <h2>To-Do List</h2>
+    <table id="task-list">
+      <thead>
+        <tr>
+          <th>Completed</th>
+          <th>Description</th>
+          <th>Delete</th>
+        </tr>
+      </thead>
+      <tbody id="task-list-body">
+        <!-- Tasks will be dynamically added here -->
+      </tbody>
+    </table>
+    <form id="add-task-form">
+      <input type="text" id="task-input" placeholder="Enter your task">
+      <button type="button" id="add-task-btn">Add Task</button>
+    </form>
+  </div>
+</div>
+
+
+
+
+</body>
+
+<style>
+  /* Reset CSS */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    color: #333;
+  }
+
+  .navbar {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .navbar a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 10px;
+    font-size: 18px;
+    transition: all 0.3s ease;
+  }
+
+  .navbar a:hover {
+    text-decoration: underline;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  h1 {
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .todo-container {
+    padding: 20px;
+    border-top: 2px solid #333;
+  }
+
+  #task-list {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+
+  #task-list th, #task-list td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ccc;
+  }
+
+  #task-list th {
+    background-color: #f0f0f0;
+  }
+
+  #task-input {
+    padding: 8px;
+    width: calc(100% - 90px);
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+
+  #add-task-btn {
+    padding: 8px 15px;
+    border: none;
+    background-color: #333;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+  }
+
+  #add-task-btn:hover {
+    background-color: #555;
+  }
+
+  .completed-task {
+    text-decoration: line-through;
+    color: #999;
+  }
+
+  .delete-button {
+    padding: 6px 12px;
+    border: none;
+    background-color: #cc0000;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .delete-button:hover {
+    background-color: #ff0000;
+  }
+</style>
+
+<!-- Inside your homepage.ejs or landing.ejs file -->
+
+<script>
+
+  // Function to handle marking a task as completed
+async function markTaskAsCompleted(taskId) {
+  try {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      window.location.href = '/login'; // Redirect to login page if token is not present
+      return;
+    }
+
+    const response = await fetch(`/tasks/${taskId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token
+      },
+      body: JSON.stringify({ completed: true }) // Send completed as true to mark task as completed
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to mark task as completed');
+    }
+
+    fetchAndDisplayTasks(); // Refresh task list after marking task as completed
+  } catch (error) {
+    console.error('Error marking task as completed:', error);
+  }
+}
+
+// Function to handle deleting a task
+async function deleteTask(taskId) {
+  try {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      window.location.href = '/login'; // Redirect to login page if token is not present
+      return;
+    }
+
+    const response = await fetch(`/tasks/${taskId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': token
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to delete task');
+    }
+
+    fetchAndDisplayTasks(); // Refresh task list after deleting task
+  } catch (error) {
+    console.error('Error deleting task:', error);
+  }
+}
+
+// Function to add a new task
+async function addTask() {
+  try {
+    const token = localStorage.getItem('token');
+    const taskInput = document.getElementById('task-input').value;
+
+    if (!token) {
+      window.location.href = '/login'; // Redirect to login page if token is not present
+      return;
+    }
+
+    const response = await fetch('/tasks', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token
+      },
+      body: JSON.stringify({ description: taskInput })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to add task');
+    }
+
+    document.getElementById('task-input').value = ''; // Clear input field after adding task
+    fetchAndDisplayTasks(); // Refresh task list after adding task
+  } catch (error) {
+    console.error('Error adding task:', error);
+  }
+}
+
+// Function to fetch tasks from backend and display them
+async function fetchAndDisplayTasks() {
+  try {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      window.location.href = '/login'; // Redirect to login page if token is not present
+      return;
+    }
+
+    const response = await fetch('/tasks', {
+      method: 'GET',
+      headers: {
+        'Authorization': token
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch tasks');
+    }
+
+    const tasks = await response.json();
+    const taskListBody = document.getElementById('task-list-body');
+
+    // Clear existing tasks
+    taskListBody.innerHTML = '';
+
+    // Add fetched tasks to the task list
+    tasks.forEach(task => {
+      const row = document.createElement('tr');
+      const completedCell = document.createElement('td');
+      const descriptionCell = document.createElement('td');
+      const deleteCell = document.createElement('td');
+      const checkbox = document.createElement('input');
+      const deleteButton = document.createElement('button');
+
+      checkbox.type = 'checkbox';
+      checkbox.checked = task.completed;
+      checkbox.addEventListener('change', () => markTaskAsCompleted(task._id));
+
+      descriptionCell.textContent = task.description;
+
+      deleteButton.textContent = 'Delete';
+      deleteButton.addEventListener('click', () => deleteTask(task._id));
+
+      completedCell.appendChild(checkbox);
+      deleteCell.appendChild(deleteButton);
+
+      row.appendChild(completedCell);
+      row.appendChild(descriptionCell);
+      row.appendChild(deleteCell);
+
+      taskListBody.appendChild(row);
+    });
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+  }
+}
+
+// Call the fetchAndDisplayTasks function when the page is loaded
+document.addEventListener('DOMContentLoaded', fetchAndDisplayTasks);
+
+// Event listener for adding a task when the button is clicked
+document.getElementById('add-task-btn').addEventListener('click', addTask);
+
+</script>
+
+
+</html>
+
